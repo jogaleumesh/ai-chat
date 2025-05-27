@@ -1,22 +1,24 @@
-import { Box, Typography, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 
 import { Message } from "../types";
 
 export default function ChatMessage({ message }: { message: Message }) {
   return (
-    <Paper
-      elevation={1}
-      sx={{
-        p: 2,
-        mb: 1,
-        backgroundColor: message.sender === "user" ? "#e0f7fa" : "#f1f8e9",
-      }}
+    <Box
+      display="flex"
+      justifyContent={message.sender === "user" ? "flex-end" : "flex-start"}
     >
-      <Typography variant="caption" sx={{ fontWeight: "bold" }}>
-        {message.sender === "user" ? "You" : "Assistant"}
-      </Typography>
-      <ReactMarkdown>{message.content}</ReactMarkdown>
-    </Paper>
+      <Box
+        maxWidth="70%"
+        bgcolor={message.sender === "user" ? "primary.main" : "grey.300"}
+        color={message.sender === "user" ? "white" : "black"}
+        px={2}
+        py={1}
+        borderRadius={2}
+      >
+        <ReactMarkdown>{message.content}</ReactMarkdown>
+      </Box>
+    </Box>
   );
 }

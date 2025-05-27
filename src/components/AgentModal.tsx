@@ -19,7 +19,7 @@ export default function AgentModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { dispatch } = useChatContext();
+  const { state, dispatch } = useChatContext();
   const [agent, setAgent] = useState({
     name: "",
     systemPrompt: "",
@@ -28,14 +28,27 @@ export default function AgentModal({
   });
 
   const handleSubmit = () => {
+    const newAgent = {
+      ...agent,
+      id: Date.now().toString(),
+      model: agent.model as "gpt-3.5-turbo" | "gpt-4",
+    };
+
+    // 1. Add the new agent to state
     dispatch({
       type: "ADD_AGENT",
+      payload: newAgent,
+    });
+
+    // 2. Attach the agent to the current chat
+    dispatch({
+      type: "SET_AGENT_FOR_CHAT",
       payload: {
-        ...agent,
-        id: Date.now().toString(),
-        model: agent.model as "gpt-3.5-turbo" | "gpt-4",
+        chatId: state.currentChatId!,
+        agentId: newAgent.id,
       },
     });
+
     onClose();
   };
 

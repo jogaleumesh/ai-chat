@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useContext, useEffect } from "react";
-import { Agent, Chat, Folder } from "../types";
+import { Agent, Chat } from "../types";
 import { saveToStorage, loadFromStorage } from "../utils/storage";
 
 const CHAT_STORAGE_KEY = "ai-chat";
@@ -7,7 +7,6 @@ const CHAT_STORAGE_KEY = "ai-chat";
 type State = {
   chats: Chat[];
   agents: Agent[];
-  folders: Folder[];
   selectedAgentId: string | null;
   selectedChatId: string | null;
   showAgentModal: boolean;
@@ -17,7 +16,6 @@ type State = {
 const initialState: State = {
   chats: loadFromStorage<Chat[]>(CHAT_STORAGE_KEY, []),
   agents: [],
-  folders: [],
   selectedAgentId: null,
   selectedChatId: null,
   showAgentModal: false,
@@ -25,31 +23,48 @@ const initialState: State = {
 
 type Action =
   | { type: "ADD_CHAT"; payload: Chat }
+  | { type: "DELETE_CHAT"; payload: string }
   | { type: "SET_CURRENT_CHAT"; payload: string }
   | { type: "ADD_AGENT"; payload: Agent }
-  | { type: "ADD_FOLDER"; payload: Folder }
   | { type: "TOGGLE_AGENT_MODAL" }
-  | { type: "SET_CHATS"; payload: Chat[] };
+  | { type: "SET_CHATS"; payload: Chat[] }
+  | {
+      type: "SET_AGENT_FOR_CHAT";
+      payload: { chatId: string; agentId: string };
+    };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "ADD_CHAT":
       return { ...state, chats: [...state.chats, action.payload] };
-    case "SET_CURRENT_CHAT":
-      return { ...state, currentChatId: action.payload };
-    case "ADD_AGENT":
-      return { ...state, agents: [...state.agents, action.payload] };
-    case "ADD_FOLDER":
-      return { ...state, folders: [...state.folders, action.payload] };
-    case "TOGGLE_AGENT_MODAL":
+    case "DELETE_CHAT":
       return {
         ...state,
-        showAgentModal: !state.showAgentModal,
+        chats: state.chats.filter((chat) => chat.id !== action.payload),
       };
     case "SET_CHATS":
       return {
         ...state,
         chats: action.payload,
+      };
+    case "SET_CURRENT_CHAT":
+      return { ...state, currentChatId: action.payload };
+    case "ADD_AGENT":
+      return { ...state, agents: [...state.agents, action.payload] };
+    case "TOGGLE_AGENT_MODAL":
+      return {
+        ...state,
+        showAgentModal: !state.showAgentModal,
+      };
+
+    case "SET_AGENT_FOR_CHAT":
+      return {
+        ...state,
+        chats: state.chats.map((chat) =>
+          chat.id === action.payload.chatId
+            ? { ...chat, agentId: action.payload.agentId }
+            : chat
+        ),
       };
     default:
       return state;

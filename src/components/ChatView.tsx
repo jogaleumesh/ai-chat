@@ -1,13 +1,15 @@
 import { useState } from "react";
 import {
   Box,
-  Typography,
-  CircularProgress,
-  IconButton,
-  TextField,
   Button,
+  IconButton,
+  Typography,
+  TextField,
+  CircularProgress,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import StopIcon from "@mui/icons-material/Stop";
+
 import { v4 as uuidv4 } from "uuid";
 
 import { useChatContext } from "../contexts/ChatContext";
@@ -100,20 +102,47 @@ export default function ChatView() {
   };
 
   return (
-    <Box flex={1} p={3}>
-      <Typography variant="h6">Chat</Typography>
+    <Box display="flex" flexDirection="column" height="100vh" width="100vw">
+      {/* Sticky Header */}
       <Box
+        p={2}
+        position="sticky"
+        top={0}
+        bgcolor="background.paper"
+        zIndex={1}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        boxShadow={1}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => dispatch({ type: "TOGGLE_AGENT_MODAL" })}
+        >
+          Create Agent
+        </Button>
+        <IconButton>
+          <MenuIcon />
+        </IconButton>
+      </Box>
+
+      {/* Chat Scrollable Area */}
+      <Box
+        flex={1}
+        overflow="auto"
+        p={2}
         sx={{
-          maxHeight: "70vh",
-          overflowY: "auto",
-          border: "1px solid #ddd",
-          p: 2,
-          mb: 2,
+          bgcolor: "#f9f9f9",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
         }}
       >
         {currentChat?.messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}
+
         {isStreaming && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <CircularProgress size={14} />
@@ -125,29 +154,49 @@ export default function ChatView() {
         )}
       </Box>
 
-      <TextField
-        fullWidth
-        multiline
-        minRows={2}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-          }
+      {/* Bottom Input Area */}
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSend();
         }}
-        placeholder="Type your message..."
-      />
+        p={2}
+        display="flex"
+        alignItems="flex-end"
+        borderTop="1px solid #ccc"
+        position="sticky"
+        bottom={0}
+        bgcolor="background.paper"
+        zIndex={1}
+      >
+        {/* Upload Icon */}
+        <Box mr={1}>
+          <FileUpload />
+        </Box>
 
-      <Box display="flex" justifyContent="flex-end" mt={1}>
-        <Button variant="contained" onClick={handleSend} sx={{ mt: 1 }}>
-          Send
-        </Button>
-      </Box>
+        {/* Input */}
+        <TextField
+          fullWidth
+          multiline
+          minRows={1}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Type your message..."
+        />
 
-      <Box sx={{ mt: 2 }}>
-        <FileUpload />
+        {/* Send Button */}
+        <Box ml={1}>
+          <Button variant="contained" type="submit">
+            Send
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

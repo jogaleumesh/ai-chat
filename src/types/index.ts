@@ -16,8 +16,8 @@ export type Chat = {
   id: string;
   agentId: string;
   messages: Message[];
-  folderId?: string;
   title: string;
+  folderId?: string;
 };
 
 export type Folder = {
