@@ -1,0 +1,70 @@
+import React, { createContext, useReducer, useContext } from "react";
+import { Agent, Chat, Folder } from "../types";
+
+type State = {
+  agents: Agent[];
+  selectedAgentId: string | null;
+  folders: Folder[];
+  chats: Chat[];
+  selectedChatId: string | null;
+  showAgentModal: boolean;
+  currentChatId?: string;
+};
+
+const initialState: State = {
+  agents: [],
+  selectedAgentId: null,
+  folders: [],
+  chats: [],
+  selectedChatId: null,
+  showAgentModal: false,
+};
+
+type Action =
+  | { type: "ADD_CHAT"; payload: Chat }
+  | { type: "SET_CURRENT_CHAT"; payload: string }
+  | { type: "ADD_AGENT"; payload: Agent }
+  | { type: "ADD_FOLDER"; payload: Folder }
+  | { type: "TOGGLE_AGENT_MODAL" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "ADD_CHAT":
+      return { ...state, chats: [...state.chats, action.payload] };
+    case "SET_CURRENT_CHAT":
+      return { ...state, currentChatId: action.payload };
+    case "ADD_AGENT":
+      return { ...state, agents: [...state.agents, action.payload] };
+    case "ADD_FOLDER":
+      return { ...state, folders: [...state.folders, action.payload] };
+    case "TOGGLE_AGENT_MODAL":
+      return {
+        ...state,
+        showAgentModal: !state.showAgentModal,
+      };
+    default:
+      return state;
+  }
+}
+
+const ChatContext = createContext<
+  { state: State; dispatch: React.Dispatch<Action> } | undefined
+>(undefined);
+
+export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return (
+    <ChatContext.Provider value={{ state, dispatch }}>
+      {children}
+    </ChatContext.Provider>
+  );
+};
+
+export const useChatContext = () => {
+  const context = useContext(ChatContext);
+  if (!context)
+    throw new Error("useChatContext must be used within a ChatProvider");
+  return context;
+};
