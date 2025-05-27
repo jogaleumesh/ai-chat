@@ -19,8 +19,3 @@ export type Chat = {
   title: string;
   folderId?: string;
 };
-
-export type Folder = {
-  id: string;
-  name: string;
-};

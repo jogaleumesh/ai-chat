@@ -13,8 +13,8 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
-
 import { Delete, Chat } from "@mui/icons-material";
+
 import { useChatContext } from "../contexts/ChatContext";
 
 export default function ChatSidebar() {
