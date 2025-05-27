@@ -18,13 +18,14 @@ import ChatMessage from "./ChatMessage";
 import FileUpload from "./FileUpload";
 
 export default function ChatView() {
-  const { state } = useChatContext();
+  const [input, setInput] = useState("");
+  const [streamBuffer, setStreamBuffer] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  const { state, dispatch } = useChatContext();
   const currentChat = state.chats.find(
     (chat) => chat.id === state.currentChatId
   );
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamBuffer, setStreamBuffer] = useState("");
 
   const { sendMessage } = useWebSocket((token) => {
     setStreamBuffer((prev) => prev + token);
@@ -45,7 +46,25 @@ export default function ChatView() {
       content: "",
     };
 
-    currentChat.messages.push(userMessage, assistantMessage);
+    // Copy messages and update currentChat
+    const updatedMessages = [
+      ...currentChat.messages,
+      userMessage,
+      assistantMessage,
+    ];
+
+    const updatedChat = {
+      ...currentChat,
+      messages: updatedMessages,
+    };
+
+    // Update global chat state
+    const updatedChats = state.chats.map((chat) =>
+      chat.id === currentChat.id ? updatedChat : chat
+    );
+
+    dispatch({ type: "SET_CHATS", payload: updatedChats });
+
     setInput("");
     setIsStreaming(true);
     sendMessage(input);
@@ -53,6 +72,23 @@ export default function ChatView() {
     const streamInterval = setInterval(() => {
       if (streamBuffer.length > 0) {
         assistantMessage.content += streamBuffer;
+
+        // Update assistant message in chat state again (optional)
+        const updatedChatsStream = state.chats.map((chat) => {
+          if (chat.id === currentChat.id) {
+            return {
+              ...chat,
+              messages: chat.messages.map((msg) =>
+                msg.id === assistantMessage.id
+                  ? { ...msg, content: assistantMessage.content }
+                  : msg
+              ),
+            };
+          }
+          return chat;
+        });
+
+        dispatch({ type: "SET_CHATS", payload: updatedChatsStream });
         setStreamBuffer("");
       }
     }, 500);

@@ -1,21 +1,24 @@
-import React, { createContext, useReducer, useContext } from "react";
+import React, { createContext, useReducer, useContext, useEffect } from "react";
 import { Agent, Chat, Folder } from "../types";
+import { saveToStorage, loadFromStorage } from "../utils/storage";
+
+const CHAT_STORAGE_KEY = "ai-chat";
 
 type State = {
-  agents: Agent[];
-  selectedAgentId: string | null;
-  folders: Folder[];
   chats: Chat[];
+  agents: Agent[];
+  folders: Folder[];
+  selectedAgentId: string | null;
   selectedChatId: string | null;
   showAgentModal: boolean;
   currentChatId?: string;
 };
 
 const initialState: State = {
+  chats: loadFromStorage<Chat[]>(CHAT_STORAGE_KEY, []),
   agents: [],
-  selectedAgentId: null,
   folders: [],
-  chats: [],
+  selectedAgentId: null,
   selectedChatId: null,
   showAgentModal: false,
 };
@@ -25,7 +28,8 @@ type Action =
   | { type: "SET_CURRENT_CHAT"; payload: string }
   | { type: "ADD_AGENT"; payload: Agent }
   | { type: "ADD_FOLDER"; payload: Folder }
-  | { type: "TOGGLE_AGENT_MODAL" };
+  | { type: "TOGGLE_AGENT_MODAL" }
+  | { type: "SET_CHATS"; payload: Chat[] };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -42,6 +46,11 @@ function reducer(state: State, action: Action): State {
         ...state,
         showAgentModal: !state.showAgentModal,
       };
+    case "SET_CHATS":
+      return {
+        ...state,
+        chats: action.payload,
+      };
     default:
       return state;
   }
@@ -55,6 +64,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    saveToStorage(CHAT_STORAGE_KEY, state.chats);
+  }, [state.chats]);
+
   return (
     <ChatContext.Provider value={{ state, dispatch }}>
       {children}
