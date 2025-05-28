@@ -61,6 +61,7 @@ export default function AgentModal({
           fullWidth
           value={agent.name}
           onChange={(e) => setAgent({ ...agent, name: e.target.value })}
+          sx={{ mt: 1 }}
         />
         <TextField
           label="System Prompt"
@@ -69,6 +70,7 @@ export default function AgentModal({
           rows={3}
           value={agent.systemPrompt}
           onChange={(e) => setAgent({ ...agent, systemPrompt: e.target.value })}
+          sx={{ mt: 2 }}
         />
         <TextField
           select
@@ -76,6 +78,7 @@ export default function AgentModal({
           fullWidth
           value={agent.model}
           onChange={(e) => setAgent({ ...agent, model: e.target.value })}
+          sx={{ mt: 2 }}
         >
           <MenuItem value="gpt-3.5-turbo">gpt-3.5-turbo</MenuItem>
           <MenuItem value="gpt-4">gpt-4</MenuItem>
@@ -88,8 +91,10 @@ export default function AgentModal({
           onChange={(_, val) =>
             setAgent({ ...agent, temperature: val as number })
           }
+          sx={{ mt: 4 }}
         />
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" onClick={handleSubmit}>
